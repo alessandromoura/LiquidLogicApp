@@ -1,0 +1,70 @@
+{
+    "item": {
+        "description": "{{ content.first.ItemName }}",
+        "itemNo": "{{ content.first.ItemCode }}"
+    },
+    {% for item in content %}
+    {% if item.OptionType == 'REP' %}
+    "replacement": {
+        "availableInventory": null,
+        "extendedWarrantyPrice": {
+            "amount": {{ item.ExtendedWarrantyAmount }},
+            "currency": "{{ item.ReplaceItemCurrency }}",
+            "maxMonths": "{{ item.ExtendedWarrantyMonthsExtension }}"
+        },
+        "inServicePrice": {
+            "amount": {{ item.InServiceAmount }},
+            "currency": "{{ item.ReplaceItemCurrency }}"
+        },
+        "itemNo": "",
+        "listPrice": {
+            "amount": {{ item.ReplaceItemAmount }},
+            "currency": "{{ item.ReplaceItemCurrency }}"
+        },
+        "name": "{{ item.ReplaceItemName }}",
+        "option": "{{ item.OptionType }}",
+        "warrantyPrice": {
+            "amount": {{ item.InWarrantyAmount }},
+            "currency": "{{ item.ReplaceItemCurrency }}"
+        }
+    },
+    {% endif %}    
+    {% endfor %}
+    
+    "upgrades": [
+        {% for item in content %}
+        {% if item.OptionType != 'REP' %}
+        {
+            "availableInventory": null,
+            "extendedWarrantyPrice": {
+                "amount": {{ item.ExtendedWarrantyAmount }},
+                "currency": "{{ item.ReplaceItemCurrency }}",
+                "maxMonths": "{{ item.ExtendedWarrantyMonthsExtension }}"
+            },
+            "inServicePrice": {
+                "amount": {{ item.InServiceAmount }},
+                "currency": "{{ item.ReplaceItemCurrency }}"
+            },
+            "itemNo": "",
+            "listPrice": {
+                "amount": {{ item.ReplaceItemAmount }},
+                "currency": "{{ item.ReplaceItemCurrency }}"
+            },
+            "name": "{{ item.ReplaceItemName }}",
+            "option": "{{ item.OptionType }}",
+            "warrantyPrice": {
+                "amount": {{ item.InWarrantyAmount }},
+                "currency": "{{ item.ReplaceItemCurrency }}"
+            }
+        }
+    {% if forloop.last == false%},{% endif %}
+    {% endif %}    
+    {% endfor %}
+    ],
+    "warrantyDetails": {
+        "endDate": "{{ content.first.EndDate }}",
+        "inWarranty": {{ content.first.InWarranty }},
+        "invoiceNo": null,
+        "startDate": "{{ content.first.StartDate }}"
+    }
+}

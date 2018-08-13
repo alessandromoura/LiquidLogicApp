@@ -1,0 +1,401 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "LogicAppIntegrationAccount": {
+      "type": "string",
+      "minLength": 1,
+      "defaultValue": "/subscriptions/xxx-222-333-yyy-444/resourceGroups/MyRG/providers/Microsoft.Logic/integrationAccounts/MyIntAcc"
+    },
+    "sql_1_Connection_Name": {
+      "type": "string",
+      "defaultValue": "sql-5"
+    },
+    "sql_1_Connection_DisplayName": {
+      "type": "string"
+    },
+    "sql_1_server": {
+      "type": "string",
+      "metadata": {
+        "description": "SQL server name"
+      }
+    },
+    "sql_1_database": {
+      "type": "string",
+      "metadata": {
+        "description": "SQL database name"
+      }
+    },
+    "sql_1_authType": {
+      "type": "string",
+      "metadata": {
+        "description": "Authentication type to connect to your database"
+      },
+      "defaultValue": "windows",
+      "allowedValues": [
+        "windows",
+        "basic"
+      ]
+    },
+    "sql_1_username": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Username credential"
+      }
+    },
+    "sql_1_password": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Password credential"
+      }
+    },
+    "sql_1_gateway_id": {
+      "type": "string",
+      "defaultValue": "/subscriptions/xxx-222-333-yyy-444/resourceGroups/MyRG/providers/Microsoft.Web/connectionGateways/MyGateway"
+    },
+    "LogicAppLocation": {
+      "type": "string",
+      "minLength": 1,
+      "allowedValues": [
+        "[resourceGroup().location]",
+        "eastasia",
+        "southeastasia",
+        "centralus",
+        "eastus",
+        "eastus2",
+        "westus",
+        "northcentralus",
+        "southcentralus",
+        "northeurope",
+        "westeurope",
+        "japanwest",
+        "japaneast",
+        "brazilsouth",
+        "australiaeast",
+        "australiasoutheast",
+        "southindia",
+        "centralindia",
+        "westindia",
+        "canadacentral",
+        "canadaeast",
+        "uksouth",
+        "ukwest",
+        "westcentralus",
+        "westus2"
+      ],
+      "defaultValue": "centralus"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "properties": {
+        "state": "Enabled",
+        "integrationAccount": {
+          "id": "[parameters('LogicAppIntegrationAccount')]"
+        },
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "actions": {
+            "Execute_stored_procedure": {
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['sql_1']['connectionId']"
+                  }
+                },
+                "method": "post",
+                "body": {
+                  "serialNo": "@triggerBody()?['serialNo']",
+                  "itemNo": "@triggerBody()?['itemNo']",
+                  "accountNo": "@triggerBody()?['accountNo']"
+                },
+                "path": "/datasets/default/procedures/@{encodeURIComponent(encodeURIComponent('[dbo].[proc_get_dbinfo]'))}"
+              },
+              "runAfter": {}
+            },
+            "Response": {
+              "type": "Response",
+              "kind": "Http",
+              "inputs": {
+                "statusCode": 200,
+                "body": "@body('Transform_JSON_to_JSON')",
+                "schema": {
+                  "properties": {
+                    "item": {
+                      "properties": {
+                        "description": {
+                          "type": "string"
+                        },
+                        "itemNo": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "replacement": {
+                      "properties": {
+                        "availableInventory": {
+                          "type": "boolean"
+                        },
+                        "extendedWarrantyPrice": {
+                          "properties": {
+                            "amount": {
+                              "type": "number"
+                            },
+                            "currency": {
+                              "type": "string"
+                            },
+                            "maxMonths": {
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "inServicePrice": {
+                          "properties": {
+                            "amount": {
+                              "type": "number"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "itemNo": {
+                          "type": "string"
+                        },
+                        "listPrice": {
+                          "properties": {
+                            "amount": {
+                              "type": "number"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "option": {
+                          "type": "string"
+                        },
+                        "warrantyPrice": {
+                          "properties": {
+                            "amount": {
+                              "type": "number"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "upgrades": {
+                      "items": {
+                        "properties": {
+                          "availableExtensionMonths": {
+                            "items": {
+                              "type": "integer"
+                            },
+                            "type": "array"
+                          },
+                          "availableInventory": {
+                            "type": "boolean"
+                          },
+                          "extendedWarrantyPrice": {
+                            "properties": {
+                              "amount": {
+                                "type": "integer"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "inServicePrice": {
+                            "properties": {
+                              "amount": {
+                                "type": "integer"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "itemNo": {
+                            "type": "string"
+                          },
+                          "listPrice": {
+                            "properties": {
+                              "amount": {
+                                "type": "integer"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "warrantyPrice": {
+                            "properties": {
+                              "amount": {
+                                "type": "integer"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "type": "object"
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "itemNo",
+                          "warrantyPrice",
+                          "inServicePrice",
+                          "extendedWarrantyPrice",
+                          "availableExtensionMonths",
+                          "listPrice",
+                          "availableInventory"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "warrantyDetails": {
+                      "properties": {
+                        "endDate": {
+                          "type": "string"
+                        },
+                        "inWarranty": {
+                          "type": "boolean"
+                        },
+                        "invoiceNo": {
+                          "type": "string"
+                        },
+                        "startDate": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "runAfter": {
+                "Transform_JSON_to_JSON": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Transform_JSON_to_JSON": {
+              "inputs": {
+                "content": "@body('Execute_stored_procedure')['ResultSets']['Table1']",
+                "integrationAccount": {
+                  "map": {
+                    "name": "map"
+                  }
+                }
+              },
+              "type": "Liquid",
+              "kind": "JsonToJson",
+              "runAfter": {
+                "Execute_stored_procedure": [
+                  "Succeeded"
+                ]
+              }
+            }
+          },
+          "parameters": {
+            "$connections": {
+              "defaultValue": {},
+              "type": "Object"
+            }
+          },
+          "triggers": {
+            "manual": {
+              "type": "Request",
+              "kind": "Http",
+              "inputs": {
+                "schema": {
+                  "properties": {
+                    "accountNo": {
+                      "type": "string"
+                    },
+                    "itemNo": {
+                      "type": "string"
+                    },
+                    "serialNo": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "method": "POST"
+              }
+            }
+          },
+          "contentVersion": "1.0.0.0",
+          "outputs": {}
+        },
+        "parameters": {
+          "$connections": {
+            "value": {
+              "sql_1": {
+                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('LogicAppLocation'), '/managedApis/', 'sql')]",
+                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('sql_1_Connection_Name'))]",
+                "connectionName": "[parameters('sql_1_Connection_Name')]"
+              }
+            }
+          }
+        },
+        "accessControl": {}
+      },
+      "name": "GetWarrantyInfo",
+      "type": "Microsoft.Logic/workflows",
+      "location": "[parameters('LogicAppLocation')]",
+      "tags": {},
+      "apiVersion": "2016-06-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/connections', parameters('sql_1_Connection_Name'))]"
+      ]
+    },
+    {
+      "type": "MICROSOFT.WEB/CONNECTIONS",
+      "apiVersion": "2016-06-01",
+      "name": "[parameters('sql_1_Connection_Name')]",
+      "location": "centralus",
+      "properties": {
+        "api": {
+          "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', 'centralus', '/managedApis/', 'sql')]"
+        },
+        "displayName": "[parameters('sql_1_Connection_DisplayName')]",
+        "parameterValues": {
+          "server": "[parameters('sql_1_server')]",
+          "database": "[parameters('sql_1_database')]",
+          "authType": "[parameters('sql_1_authType')]",
+          "username": "[parameters('sql_1_username')]",
+          "password": "[parameters('sql_1_password')]",
+          "gateway": {
+            "id": "[parameters('sql_1_gateway_id')]"
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {}
+}
